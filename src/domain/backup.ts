@@ -55,7 +55,6 @@ export function validateBackup(data: unknown): ValidationResult {
   if (errors.length) return { ok: false, errors, warnings, counts }
 
   const pid = String(d.project!.id)
-  const ids = new Set<string>()
   for (const [table, rows] of Object.entries(d.tables!)) {
     if (!(BACKUP_TABLES as readonly string[]).includes(table)) {
       warnings.push(`알 수 없는 테이블 ${table} 은(는) 무시됩니다.`)
@@ -63,6 +62,8 @@ export function validateBackup(data: unknown): ValidationResult {
     }
     if (!Array.isArray(rows)) { errors.push(`${table} 데이터가 배열이 아닙니다.`); continue }
     counts[table] = rows.length
+    // subtype tables share ids with atlas_entities by design, so uniqueness is per table
+    const ids = new Set<string>()
     for (const r of rows) {
       if (r.project_id !== pid) { errors.push(`${table}에 다른 프로젝트의 행이 섞여 있습니다.`); break }
       if (typeof r.id === 'string') {

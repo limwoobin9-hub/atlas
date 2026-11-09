@@ -227,7 +227,7 @@ function ApplyClauseDialog({ treaty, clause, onClose }: { treaty: Entity; clause
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent title={`제${clause.ordinal}조 효과를 확정 반영`} description={`세계선 "${branch.name}"의 데이터에 적용됩니다. 이전 상태는 적용일에 종료되고 이후 기록은 유지됩니다. 변경 기록에서 되돌릴 수 있습니다.`}
-        footer={<><Button variant="secondary" onClick={onClose}>취소</Button><Button onClick={apply} disabled={busy || control.isLoading} data-testid="apply-clause-confirm">{busy ? '적용 중…' : '확정 반영'}</Button></>}>
+        footer={<><Button variant="secondary" onClick={onClose}>취소</Button><Button onClick={apply} disabled={busy || control.isLoading || rels.isLoading || parts.isLoading} data-testid="apply-clause-confirm">{busy ? '적용 중…' : '확정 반영'}</Button></>}>
         <div className="flex flex-col gap-3 text-[12.5px]">
           <div className="rounded-md bg-surface-2 p-3"><Badge tone="accent">{EFFECTS[clause.effect_type]}</Badge> <EffectSummary clause={clause} /></div>
           <Field label="적용 날짜 (조약 발효일)"><Input type="date" value={from} onChange={(ev) => setFrom(ev.target.value)} /></Field>

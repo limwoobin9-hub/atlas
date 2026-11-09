@@ -26,6 +26,8 @@ export interface FieldDef {
   suggestions?: string[]
   min?: number
   max?: number
+  /** initial value for new rows (mirrors the column default) */
+  default?: string
 }
 
 const opts = (o: Record<string, string>) => o
@@ -228,7 +230,7 @@ export const TEMPORAL: Record<string, TemporalConfig> = {
     fields: [
       { name: 'character_id', label: '인물', type: 'entity', kinds: ['character'], required: true },
       { name: 'title', label: '직책', type: 'text', required: true, placeholder: '예: 외무장관' },
-      { name: 'position_kind', label: '직책 구분', type: 'select', options: POSITION_KINDS },
+      { name: 'position_kind', label: '직책 구분', type: 'select', options: POSITION_KINDS, default: 'other' },
       { name: 'organization_id', label: '소속 기관', type: 'entity', kinds: ['country', 'government', 'party', 'unit', 'organization', 'parliament'] },
       { name: 'rank', label: '계급', type: 'text' },
       { name: 'note', label: '메모', type: 'textarea', span: 3 },
@@ -240,7 +242,7 @@ export const TEMPORAL: Record<string, TemporalConfig> = {
     fields: [
       { name: 'character_id', label: '인물', type: 'entity', kinds: ['character'], required: true },
       { name: 'organization_id', label: '소속 (국가·정당·부대·단체)', type: 'entity', kinds: ['country', 'party', 'faction', 'unit', 'organization', 'government'], required: true },
-      { name: 'affiliation_type', label: '소속 형태', type: 'select', options: opts({ citizen: '국민·시민', member: '당원·회원', serviceman: '군 복무', employee: '직원', supporter: '지지자', other: '기타' }) },
+      { name: 'affiliation_type', label: '소속 형태', type: 'select', options: opts({ citizen: '국민·시민', member: '당원·회원', serviceman: '군 복무', employee: '직원', supporter: '지지자', other: '기타' }), default: 'member' },
       { name: 'role', label: '역할', type: 'text' },
       { name: 'note', label: '메모', type: 'textarea', span: 3 },
     ],
@@ -305,7 +307,7 @@ export const TEMPORAL: Record<string, TemporalConfig> = {
       { name: 'war_id', label: '전쟁', type: 'entity', kinds: ['war'], required: true },
       { name: 'participant_id', label: '참전국·세력', type: 'entity', kinds: ['country', 'organization'], required: true },
       { name: 'side_id', label: '진영', type: 'warSide', required: true },
-      { name: 'role', label: '역할', type: 'select', options: opts({ leader: '진영 주도국', belligerent: '교전국', co_belligerent: '공동교전국', supporter: '지원국', volunteer: '의용군', other: '기타' }) },
+      { name: 'role', label: '역할', type: 'select', options: opts({ leader: '진영 주도국', belligerent: '교전국', co_belligerent: '공동교전국', supporter: '지원국', volunteer: '의용군', other: '기타' }), default: 'belligerent' },
       { name: 'note', label: '메모', type: 'text', span: 3 },
     ],
     describe: (r, n) => `${n(r.participant_id)}`,
@@ -314,7 +316,7 @@ export const TEMPORAL: Record<string, TemporalConfig> = {
     table: 'atlas_entity_relations', label: '관계', keyField: 'from_id',
     fields: [
       { name: 'from_id', label: '항목', type: 'entity', required: true },
-      { name: 'relation_type', label: '관계', type: 'select', options: ENTITY_RELATION_TYPES, required: true },
+      { name: 'relation_type', label: '관계', type: 'select', options: ENTITY_RELATION_TYPES, required: true, default: 'related' },
       { name: 'to_id', label: '대상', type: 'entity', required: true },
       { name: 'note', label: '메모', type: 'text', span: 3 },
     ],

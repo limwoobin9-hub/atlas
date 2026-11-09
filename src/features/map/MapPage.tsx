@@ -302,7 +302,7 @@ export default function MapPage() {
             </div>
           )}
           <div className="pointer-events-none absolute bottom-2 left-3 rounded bg-surface/90 px-2 py-0.5 text-[10.5px] tabular-nums text-muted shadow-sm">
-            {mapCoordLabel} · 확대 {Math.round(zoomK * 100)}% {map.attribution && <>· © {map.attribution}</>}
+            {mapCoordLabel && <>{mapCoordLabel} · </>}확대 {Math.round(zoomK * 100)}% {map.attribution && <>· © {map.attribution}</>}
           </div>
         </div>
 

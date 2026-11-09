@@ -70,7 +70,10 @@ export function visibleRows<T extends TemporalRow>(rows: T[], chain: ChainLink[]
     const l = link.get(r.branch_id)
     if (!l) continue
     if (l.depth > 0 && l.cutoff && r.valid_from && !(r.valid_from < l.cutoff)) continue
-    candidates.push(r)
+    // An ancestor row that the ancestor ended *after* the fork was ended by the ancestor's own
+    // post-fork history; in this line it simply continues until this line records a change.
+    if (l.depth > 0 && l.cutoff && r.valid_to && r.valid_to > l.cutoff) candidates.push({ ...r, valid_to: null })
+    else candidates.push(r)
   }
   const overridden = new Set<string>()
   for (const r of candidates) if (r.overrides_id) overridden.add(r.overrides_id)

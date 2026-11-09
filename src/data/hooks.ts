@@ -141,6 +141,8 @@ export function useInvalidateTable() {
       else if (t === 'atlas_branches') qc.invalidateQueries({ queryKey: qk.branches(projectId) })
       else if (t === 'atlas_entity_branch_hidden') qc.invalidateQueries({ queryKey: qk.hidden(projectId) })
       else qc.invalidateQueries({ queryKey: ['table', t, projectId] })
+      // single-row caches of the same table (detail pages)
+      qc.invalidateQueries({ queryKey: ['subtype', t] })
     }
     qc.invalidateQueries({ queryKey: ['backlinks', projectId] })
   }

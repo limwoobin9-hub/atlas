@@ -1,13 +1,19 @@
 {
   "name": "atlas",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "lint": "oxlint src",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "NODE_USE_ENV_PROXY=1 ATLAS_E2E=1 vitest run --config vitest.integration.config.ts",
+    "e2e": "node e2e/scenario.mjs",
+    "e2e:tour": "node e2e/tour.mjs",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

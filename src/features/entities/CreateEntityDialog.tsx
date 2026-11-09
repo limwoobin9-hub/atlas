@@ -17,7 +17,7 @@ import { EntityPicker } from './EntityPicker'
 
 interface CreateState {
   kind: EntityKind | null
-  preset: { sub?: AnyRow; base?: AnyRow; navigate?: boolean; onCreated?: (id: string) => void } | null
+  preset: { sub?: AnyRow; base?: AnyRow; navigate?: boolean; onCreated?: (id: string) => void | Promise<void> } | null
   open: (kind: EntityKind, preset?: CreateState['preset']) => void
   close: () => void
 }
@@ -41,23 +41,27 @@ const CONTEXT_FIELD: Partial<Record<EntityKind, { name: string; label: string; k
   treaty: { name: 'war_id', label: '관련 전쟁', kinds: ['war'] },
 }
 
+const HISTORICAL = new Set<EntityKind>(['event', 'war', 'battle', 'treaty', 'election', 'government'])
+
 export function CreateEntityDialog() {
   const { kind, preset, close, open } = useCreateDialog()
   const { projectId, branchId, branch, date } = useWorld()
   const invalidate = useInvalidateTable()
   const nav = useNavigate()
   const [name, setName] = useState('')
-  const [allLines, setAllLines] = useState(true)
+  const [allLinesChoice, setAllLines] = useState<boolean | null>(null)
   const [start, setStart] = useState('')
   const [ctx, setCtx] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   if (!kind) return null
   const meta = KINDS[kind]
+  // history-specific records belong to the line they were written in; lasting things (countries, people...) are shared
+  const allLines = allLinesChoice ?? !HISTORICAL.has(kind)
   const ctxField = CONTEXT_FIELD[kind]
   const ctxValue = ctx ?? (ctxField ? (preset?.sub?.[ctxField.name] as string | undefined) ?? null : null)
 
-  const reset = () => { setName(''); setStart(''); setCtx(null); setErr(null); setAllLines(true) }
+  const reset = () => { setName(''); setStart(''); setCtx(null); setErr(null); setAllLines(null) }
   const submit = async () => {
     if (!name.trim()) return setErr('이름을 입력하세요.')
     setBusy(true)
@@ -68,9 +72,9 @@ export function CreateEntityDialog() {
         projectId, kind, name, originBranchId: allLines && branch.is_main ? null : branchId,
         base: { ...(preset?.base ?? {}), starts_on: start || (preset?.base?.starts_on as string | undefined) || null }, sub,
       })
+      await preset?.onCreated?.(e.id)
       invalidate('atlas_entities', meta.table ?? 'atlas_entities')
       toast.success(`${meta.label} "${e.name}"을(를) 만들었습니다.`)
-      preset?.onCreated?.(e.id)
       if (preset?.navigate !== false) nav(entityHref(projectId, e))
       reset()
       close()

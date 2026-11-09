@@ -84,7 +84,7 @@ export function EntityForm({ entity, sections = 'all' }: { entity: Entity; secti
           </Field>
           {!hideEnd && (
             <Field label={meta.endLabel} error={errors.ends_on} hint="이 날짜부터 존재하지 않는 것으로 계산됩니다.">
-              <Input type="date" value={base.ends_on ?? ''} onChange={(e) => setB('ends_on', e.target.value || null)} disabled={ro} />
+              <Input type="date" value={base.ends_on ?? ''} onChange={(e) => setB('ends_on', e.target.value || null)} disabled={ro} data-testid="entity-end" />
             </Field>
           )}
           <Field label={entity.kind === 'country' ? '기본 대표 색상' : entity.kind === 'party' ? '정당 색상' : '색상'}>

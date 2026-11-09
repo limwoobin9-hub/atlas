@@ -174,7 +174,7 @@ function ApplyDialog({ election, chamber, results, onClose }: { election: Entity
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent title="선거 결과를 의회 구성에 반영" description="확정한 날짜부터 의석 배분이 선거 결과로 바뀝니다. 이전 구성은 그 날짜에 종료되며, 이후에 기록된 구성은 지워지지 않습니다. 결과를 나중에 수정하면 다시 반영할 수 있습니다."
-        footer={<><Button variant="secondary" onClick={onClose}>취소</Button><Button onClick={apply} disabled={busy} data-testid="apply-confirm">{busy ? '반영 중…' : '반영'}</Button></>}>
+        footer={<><Button variant="secondary" onClick={onClose}>취소</Button><Button onClick={apply} disabled={busy || seats.isLoading || !seats.data} data-testid="apply-confirm">{busy ? '반영 중…' : seats.isLoading ? '불러오는 중…' : '반영'}</Button></>}>
         <Field label="반영 시작일 (예: 의회 개원일)"><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></Field>
         <p className={`mt-3 text-[12px] ${sum === chamber.total_seats ? 'text-success' : 'text-warning'}`}>의석 합계 {sum} / {chamber.total_seats}석 {sum !== chamber.total_seats && '— 합계가 다르면 설정 충돌로 표시됩니다.'}</p>
       </DialogContent>

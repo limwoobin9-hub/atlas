@@ -124,7 +124,8 @@ function TemporalRowDialog({ config, mode, row, keyRows, fixed, warId, onClose, 
 }) {
   const { date, branchId } = useWorld()
   const initial: AnyRow = {}
-  for (const f of config.fields) initial[f.name] = row?.[f.name] ?? (f.type === 'boolean' ? (f.name === 'is_public') : f.type === 'select' && f.required ? Object.keys(f.options ?? {})[0] : null)
+  // selects map to NOT NULL columns with defaults: start from the first option
+  for (const f of config.fields) initial[f.name] = row?.[f.name] ?? (f.type === 'boolean' ? (f.name === 'is_public') : f.type === 'select' ? f.default ?? Object.keys(f.options ?? {})[0] : null)
   Object.assign(initial, fixed)
   const [values, setValues] = useState<AnyRow>(initial)
   const [from, setFrom] = useState<string>(mode === 'edit' ? row?.valid_from ?? '' : date)
@@ -143,7 +144,16 @@ function TemporalRowDialog({ config, mode, row, keyRows, fixed, warId, onClose, 
     setBusy(true)
     try {
       const payload: AnyRow = {}
-      for (const f of config.fields) payload[f.name] = values[f.name] === '' ? null : values[f.name]
+      const TEXT = new Set(['text', 'textarea', 'longtext'])
+      for (const f of config.fields) {
+        const v = values[f.name]
+        // text columns are NOT NULL with '' default; other empty inputs become NULL
+        payload[f.name] = TEXT.has(f.type) ? (v ?? '') : v === '' ? null : v
+        if (f.type === 'boolean') payload[f.name] = Boolean(v)
+        if (f.type === 'select' && (v === null || v === '')) delete payload[f.name]
+      }
+      // values fixed by context (e.g. country_id on a country page) are always part of the row
+      for (const [k, v] of Object.entries(fixed)) payload[k] = v
       if (mode === 'edit' && row) {
         await applyPlan(config.table as TemporalTable, [{ kind: 'update', row, patch: { ...payload, valid_from: from || null, valid_to: to || null } }], branchId, {})
       } else if (mode === 'from-date') {

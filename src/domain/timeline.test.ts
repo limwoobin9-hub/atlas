@@ -40,6 +40,15 @@ describe('visibleRows', () => {
   it('branch only inherits rows that started before fork date', () => {
     expect(visibleRows(rows, branchChain(branches, 'A')).map((r) => r.id)).toEqual(['r1'])
   })
+  it('an inherited row ended by the parent after the fork stays open in the branch', () => {
+    const v = visibleRows(rows, branchChain(branches, 'A'))
+    expect(v[0].valid_to).toBeNull()
+    // ...but a row that ended before the fork keeps its end
+    const early = [row({ id: 'e', valid_from: '1936-01-01', valid_to: '1938-01-01' })]
+    expect(visibleRows(early, branchChain(branches, 'A'))[0].valid_to).toBe('1938-01-01')
+    // and the parent line itself is unchanged
+    expect(visibleRows(rows, branchChain(branches, 'main'))[0].valid_to).toBe('1940-01-01')
+  })
   it('override in branch hides the original only in that branch', () => {
     const override = row({ id: 'o1', branch_id: 'A', overrides_id: 'r1', value: 'monarchy', valid_from: '1936-01-01', valid_to: null })
     const all = [...rows, override]

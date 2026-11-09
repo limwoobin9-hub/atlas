@@ -14,25 +14,25 @@ import { ForgotPasswordPage, LoginPage, RequireAuth, SignupPage, UpdatePasswordP
 import { ProjectsPage } from '@/features/projects/ProjectsPage'
 import { ErrorBoundary } from '@/features/shell/ErrorBoundary'
 import { ProjectLayout } from '@/features/shell/ProjectLayout'
-import { EntityDetailPage } from '@/features/entities/EntityDetailPage'
 import { EntityListPage } from '@/features/entities/EntityListPage'
 import { kindByRoute } from '@/domain/kinds'
-import { DashboardPage } from '@/features/dashboard/DashboardPage'
-import { TimelinePage } from '@/features/timeline/TimelinePage'
-import { PoliticsPage } from '@/features/politics/PoliticsPage'
-import { ParliamentsPage } from '@/features/parliament/ParliamentsPage'
-import { DiplomacyPage } from '@/features/diplomacy/DiplomacyPage'
-import { WarsPage } from '@/features/wars/WarsPage'
-import { MilitaryPage } from '@/features/military/OrderOfBattle'
-import { AssetsPage } from '@/features/assets/AssetsPage'
-import { SearchPage } from '@/features/search/SearchPage'
-import { BranchesPage } from '@/features/branches/BranchesPage'
-import { HistoryPage } from '@/features/history/HistoryPage'
-import { ConflictsPage } from '@/features/conflicts/ConflictsPage'
-import { SettingsPage } from '@/features/settings/SettingsPage'
-import { CountriesPage } from '@/features/countries/CountriesPage'
 
 const MapPage = lazy(() => import('@/features/map/MapPage'))
+const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage').then((x) => ({ default: x.DashboardPage })))
+const TimelinePage = lazy(() => import('@/features/timeline/TimelinePage').then((x) => ({ default: x.TimelinePage })))
+const PoliticsPage = lazy(() => import('@/features/politics/PoliticsPage').then((x) => ({ default: x.PoliticsPage })))
+const ParliamentsPage = lazy(() => import('@/features/parliament/ParliamentsPage').then((x) => ({ default: x.ParliamentsPage })))
+const DiplomacyPage = lazy(() => import('@/features/diplomacy/DiplomacyPage').then((x) => ({ default: x.DiplomacyPage })))
+const WarsPage = lazy(() => import('@/features/wars/WarsPage').then((x) => ({ default: x.WarsPage })))
+const MilitaryPage = lazy(() => import('@/features/military/OrderOfBattle').then((x) => ({ default: x.MilitaryPage })))
+const AssetsPage = lazy(() => import('@/features/assets/AssetsPage').then((x) => ({ default: x.AssetsPage })))
+const SearchPage = lazy(() => import('@/features/search/SearchPage').then((x) => ({ default: x.SearchPage })))
+const BranchesPage = lazy(() => import('@/features/branches/BranchesPage').then((x) => ({ default: x.BranchesPage })))
+const HistoryPage = lazy(() => import('@/features/history/HistoryPage').then((x) => ({ default: x.HistoryPage })))
+const ConflictsPage = lazy(() => import('@/features/conflicts/ConflictsPage').then((x) => ({ default: x.ConflictsPage })))
+const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then((x) => ({ default: x.SettingsPage })))
+const CountriesPage = lazy(() => import('@/features/countries/CountriesPage').then((x) => ({ default: x.CountriesPage })))
+const EntityDetailPage = lazy(() => import('@/features/entities/EntityDetailPage').then((x) => ({ default: x.EntityDetailPage })))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,7 +55,11 @@ function KindRoute() {
 
 function KindDetailRoute() {
   const { kindRoute = '' } = useParams()
-  return <EntityDetailPage kindRoute={kindRoute} />
+  return <S><EntityDetailPage kindRoute={kindRoute} /></S>
+}
+
+function S({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<Loading />}>{children}</Suspense>
 }
 
 function ThemeSync() {
@@ -94,21 +98,21 @@ export default function App() {
                   <Route path="/account" element={<RequireAuth><AccountPage /></RequireAuth>} />
                   <Route path="/projects" element={<RequireAuth><ProjectsPage /></RequireAuth>} />
                   <Route path="/p/:projectId" element={<RequireAuth><ProjectLayout /></RequireAuth>}>
-                    <Route index element={<DashboardPage />} />
+                    <Route index element={<S><DashboardPage /></S>} />
                     <Route path="map" element={<Suspense fallback={<Loading label="지도 엔진을 불러오는 중…" />}><MapPage /></Suspense>} />
-                    <Route path="timeline" element={<TimelinePage />} />
-                    <Route path="countries" element={<CountriesPage />} />
-                    <Route path="politics" element={<PoliticsPage />} />
-                    <Route path="parliaments" element={<ParliamentsPage />} />
-                    <Route path="diplomacy" element={<DiplomacyPage />} />
-                    <Route path="wars" element={<WarsPage />} />
-                    <Route path="military" element={<MilitaryPage />} />
-                    <Route path="assets" element={<AssetsPage />} />
-                    <Route path="search" element={<SearchPage />} />
-                    <Route path="branches" element={<BranchesPage />} />
-                    <Route path="history" element={<HistoryPage />} />
-                    <Route path="conflicts" element={<ConflictsPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="timeline" element={<S><TimelinePage /></S>} />
+                    <Route path="countries" element={<S><CountriesPage /></S>} />
+                    <Route path="politics" element={<S><PoliticsPage /></S>} />
+                    <Route path="parliaments" element={<S><ParliamentsPage /></S>} />
+                    <Route path="diplomacy" element={<S><DiplomacyPage /></S>} />
+                    <Route path="wars" element={<S><WarsPage /></S>} />
+                    <Route path="military" element={<S><MilitaryPage /></S>} />
+                    <Route path="assets" element={<S><AssetsPage /></S>} />
+                    <Route path="search" element={<S><SearchPage /></S>} />
+                    <Route path="branches" element={<S><BranchesPage /></S>} />
+                    <Route path="history" element={<S><HistoryPage /></S>} />
+                    <Route path="conflicts" element={<S><ConflictsPage /></S>} />
+                    <Route path="settings" element={<S><SettingsPage /></S>} />
                     <Route path=":kindRoute" element={<KindRoute />} />
                     <Route path=":kindRoute/:entityId" element={<KindDetailRoute />} />
                   </Route>

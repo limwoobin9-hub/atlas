@@ -18,6 +18,7 @@ const backup: BackupFile = {
       { id: BR, project_id: P, is_main: false, parent_id: MAIN, fork_date: '1939-01-01', name: 'A' },
     ],
     atlas_entities: [{ id: C1, project_id: P, kind: 'country', name: 'A' }, { id: R1, project_id: P, kind: 'region', name: 'R' }],
+    atlas_countries: [{ id: C1, project_id: P }],
     atlas_country_states: [
       { id: S2, project_id: P, branch_id: BR, country_id: C1, overrides_id: S1 },
       { id: S1, project_id: P, branch_id: MAIN, country_id: C1, overrides_id: null, flag_path: `${P}/flags/a.png` },
@@ -30,6 +31,9 @@ describe('backup', () => {
   it('validates structure', () => {
     expect(validateBackup(backup).ok).toBe(true)
     expect(validateBackup({ format: 'x' }).ok).toBe(false)
+    const dup = structuredClone(backup)
+    dup.tables.atlas_entities.push({ ...dup.tables.atlas_entities[0] })
+    expect(validateBackup(dup).ok).toBe(false)
     const bad = structuredClone(backup)
     bad.tables.atlas_entities[0].project_id = 'other'
     expect(validateBackup(bad).ok).toBe(false)
@@ -46,6 +50,7 @@ describe('backup', () => {
     expect(tables.atlas_branches[0].parent_id).toBe(NM)
     const newC1 = tables.atlas_entities[0].id
     expect(newC1).not.toBe(C1)
+    expect(tables.atlas_countries[0].id).toBe(newC1)
     expect(tables.atlas_chambers[0].party_order).toEqual([newC1])
     const states = tables.atlas_country_states
     // original row must be inserted before its override

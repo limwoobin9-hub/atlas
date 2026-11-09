@@ -66,11 +66,11 @@ export function FieldInput({ field, value, onChange, disabled, warId }: Props) {
     case 'entity':
       return <EntityPicker value={(value as string) ?? null} onChange={onChange} kinds={field.kinds} disabled={disabled} testId={`picker-${field.name}`} />
     case 'ideology':
-      return <IdeologySelect value={(value as string) ?? null} onChange={onChange} disabled={disabled} />
+      return <IdeologySelect id={id} value={(value as string) ?? null} onChange={onChange} disabled={disabled} />
     case 'chamber':
-      return <ChamberSelect value={(value as string) ?? null} onChange={onChange} disabled={disabled} />
+      return <ChamberSelect id={id} value={(value as string) ?? null} onChange={onChange} disabled={disabled} />
     case 'warSide':
-      return <WarSideSelect value={(value as string) ?? null} onChange={onChange} disabled={disabled} warId={warId ?? null} />
+      return <WarSideSelect id={id} value={(value as string) ?? null} onChange={onChange} disabled={disabled} warId={warId ?? null} />
     case 'image':
       return <ImageInput value={(value as string) ?? null} onChange={onChange} disabled={disabled} category={field.name.includes('flag') ? 'flag' : field.name.includes('emblem') ? 'emblem' : 'other'} />
     case 'specs':
@@ -92,31 +92,31 @@ export function ColorInput({ value, onChange, disabled }: { value: string | null
   )
 }
 
-export function IdeologySelect({ value, onChange, disabled }: { value: string | null; onChange: (v: string | null) => void; disabled?: boolean }) {
+export function IdeologySelect({ value, onChange, disabled, id }: { value: string | null; onChange: (v: string | null) => void; disabled?: boolean; id?: string }) {
   const q = useIdeologies()
   return (
-    <Select value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} disabled={disabled}>
+    <Select id={id} value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} disabled={disabled}>
       <option value="">—</option>
       {(q.data ?? []).map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
     </Select>
   )
 }
 
-function ChamberSelect({ value, onChange, disabled }: { value: string | null; onChange: (v: string | null) => void; disabled?: boolean }) {
+function ChamberSelect({ value, onChange, disabled, id }: { value: string | null; onChange: (v: string | null) => void; disabled?: boolean; id?: string }) {
   const q = useTable<Chamber>('atlas_chambers', undefined, 'sort_order')
   const { entityMap } = useWorld()
   return (
-    <Select value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} disabled={disabled}>
+    <Select id={id} value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} disabled={disabled}>
       <option value="">—</option>
       {(q.data ?? []).map((c) => <option key={c.id} value={c.id}>{entityMap.get(c.parliament_id)?.name ?? '의회'} · {c.name} ({c.total_seats}석)</option>)}
     </Select>
   )
 }
 
-function WarSideSelect({ value, onChange, disabled, warId }: { value: string | null; onChange: (v: string | null) => void; disabled?: boolean; warId: string | null }) {
+function WarSideSelect({ value, onChange, disabled, warId, id }: { value: string | null; onChange: (v: string | null) => void; disabled?: boolean; warId: string | null; id?: string }) {
   const q = useTable<WarSide>('atlas_war_sides', warId ? { war_id: warId } : undefined, 'sort_order')
   return (
-    <Select value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} disabled={disabled || !warId}>
+    <Select id={id} value={value ?? ''} onChange={(e) => onChange(e.target.value || null)} disabled={disabled || !warId}>
       <option value="">{warId ? '—' : '먼저 전쟁을 지정하세요'}</option>
       {(q.data ?? []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
     </Select>

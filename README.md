@@ -1,32 +1,113 @@
-# React + TypeScript + Vite
+# ATLAS — Alternative Timeline & Lore Administration Studio
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+대체역사·가상역사 세계관을 **하나의 데이터베이스**로 구성하고, 날짜와 세계선(분기)에 따라 달라지는 지도·국가·정부·정당·의회·군대·외교·전쟁·조약·사건을 서로 연결해 만들고, 고치고, 탐색하는 웹 작업실입니다.
 
-Currently, two official plugins are available:
+- 세계관 내용은 사용자가 직접 작성합니다. 앱이 역사를 자동 생성하거나 날짜 변경만으로 기록을 만들지 않습니다.
+- 모든 데이터는 Supabase PostgreSQL에 저장되며, 권한은 Row Level Security로 데이터베이스에서 강제됩니다.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 주요 기능
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| 영역 | 구현 내용 |
+|---|---|
+| 인증 | 이메일·비밀번호 가입, 로그인/로그아웃, 이메일 인증, 인증 메일 재발송, 비밀번호 재설정, 세션 유지·만료 처리, 계정 설정(표시 이름·소개·비밀번호) |
+| 프로젝트 | 생성·이름/설명 변경·삭제(소유자)·복제·즐겨찾기·최근 순·검색, 기본 날짜(기본 1936-01-01)·기본 지도·대표 이미지·주요 역사 날짜, JSON/ZIP 백업과 복구 |
+| 권한 | OWNER / EDITOR / VIEWER, 이메일 초대(미가입자는 가입 시 자동 참여), 권한 변경, 마지막 소유자 보호 — 모두 RLS로 강제, Storage도 프로젝트 단위로 보호 |
+| 세계선 | 기본 세계선, 분기 생성(분기일), 전체 복제(분기일 없는 사본), 계보 트리, 분기별 독립 수정(copy-on-write), 항목 숨김, 두 세계선 비교 |
+| 날짜 | 상단 고정 날짜, 직접 입력(느슨한 형식), 달력, 연도 입력, ±일/월/년, 이전·다음 사건, 주요 역사 날짜, 타임라인 슬라이더, 기본 날짜 복귀 |
+| 지도 | SVG·GeoJSON·TopoJSON·PNG·JPG·WebP, 1938/1945 역사 정치지도 프리셋(라이선스 표기), 확대(최대 2000배)·휠·드래그·핀치·전체화면·원점·국가/마커 이동, 레이어(실효지배·명목주권·이념·외교관계·전쟁 진영·영유권 사선·라벨·마커·전선·교통로·주석) |
+| 지도 편집 | 조회/선택/색칠(드래그 연속)/해제/영유권/마커 생성·이동·삭제/폴리곤 그리기/꼭짓점 편집/전선·교통로·철도·화살표/텍스트 주석, 다중 선택 일괄 지정, 실행 취소·다시 실행, 영역↔지역 항목 연결, 일괄 등록 |
+| 국가·지역 | 국가 상세 11개 탭(개요·역사·정치·의회·군사·외교·영토·사건·인물·관계·자료), 시점별 국가 상태(국가명·국기·국장·색상·수도·정부 소재지·정치체제·이념·원수·수반·인구·면적·경제), 17종 국가·정치세력 유형, 지역 계층, 실효지배/명목주권/행정소속/주장 분리 기록 |
+| 정치 | 이념 관리(색상·정렬·상위 분류, 드래그 정렬), 정당(이념 기반 자동 색상·직접 지정), 계파(결성·해산·분열), 정부(재임 기간·집권/연립 정당·내각 임명), 지지율 기록과 그래프(입력값만) |
+| 의회·선거 | 단원제/양원제, 원별 총 의석·과반, 반원형/원형/누적 막대/정당 비율/여야 구성 시각화, 정당 배치 드래그(DB 저장), 시점별 의석 배분, 합계 검증, 선거 결과(득표·득표율·의석), 이전 선거 비교(증감·제1당 변화·과반), 확정한 날짜부터 의회 구성 반영 |
+| 인물 | 본명·별칭·국적·계급·약력·사진, 직책 경력과 소속 이력(시점별), 관계(가족·동맹·경쟁자·상관·부하·스승·제자 등) 그래프 |
+| 군사 | 계층형 편제 트리(날짜별), 드래그로 상위부대 변경(그날부터), 하위부대 추가·복제, 펼치기/접기·검색, 순환참조 방지(트리거+클라이언트), 지휘관·국가·병력·주둔지·훈련도·사기·충성도·보급 이력, 함선(소속 함대·개명·기함·개장 이력), 장비 모델과 부대별 보유 수량 분리 |
+| 외교·전쟁·조약 | 외교관계 12종(비밀 관계 포함)과 그래프, 전쟁(다중 진영·진영 색상·참전/탈퇴 시점·진영 변경), 전투 항목, 전선 지도, 조약(12종 프리셋, 서명국, 조항) — 조항의 영토 이전/관계 변경/전쟁 종결 효과는 **확정 반영 버튼을 눌러야만** 적용 |
+| 사건·연표 | 사건(배경·원인·경과·결과·영향·주요 날짜), 사건 간 원인/결과/선행/후속/관련 관계, 연표 4가지 모드(연대순·카드·연도별·기간형), 국가·인물·전쟁·유형·기간 필터, 클릭 시 해당 날짜로 이동 |
+| 연결 | 공통 Entity Registry + 복합 외래키로 참조 무결성, 모든 상세 페이지의 역참조(양방향) 목록, 관계 선택 UI에서 검색·즉시 생성 |
+| 자료실 | Storage 업로드(50MB, 형식 검증), 미리보기(이미지 확대/PDF), 다운로드, 이름·설명·태그·폴더·출처·라이선스, 항목 연결 |
+| 검색 | Ctrl+K 팔레트(이동·생성 명령 포함), 전체 검색 화면(유형·상태·기간·현재 날짜·모든 세계선 필터, 자료 포함) |
+| 데이터 관리 | 자동 저장(디바운스, 저장 중/완료/실패·재시도 표시, 이탈 경고), 변경 기록(필드별 전후 값, 되돌리기), 설정 충돌 검사(11종) + 예외 처리, Error Boundary |
+| UI | 라이트/다크/시스템 테마, 접을 수 있는 그룹 사이드바, 크기 조절 가능한 빠른 보기 패널, 가상 스크롤 목록, 지연 로딩 |
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## 아키텍처
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```
+src/
+  domain/      순수 로직 (단위 테스트 대상): 날짜, 세계선 해석·copy-on-write 계획, 의석 배치, 편제 트리,
+               설정 충돌 검사, 백업 ID 재매핑, 세계선 비교, 정당 색상
+  data/        Supabase 접근 계층: 공통 CRUD/페이지네이션, 시점 데이터 적용(되돌리기 기록), 훅, 백업, 자료 업로드
+  features/    화면 단위 모듈 (map, politics, parliament, military, wars, treaties, ...)
+  components/  UI 키트(shadcn 스타일), 그래프·차트 공통 컴포넌트
+  stores/      Zustand (세션: 날짜·세계선·테마·패널 / 자동 저장 상태)
+supabase/migrations/  버전별 SQL 마이그레이션 (스키마, RLS, RPC, Storage)
+tests/integration/    실제 Supabase 대상 통합 테스트 (RLS·트리거·RPC·백업)
+e2e/                  Playwright 종합 시나리오 및 전체 화면 순회
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+기술: React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · Radix UI(shadcn 방식) · Lucide · TanStack Query/Virtual · Zustand · React Hook Form + Zod · d3-geo/d3-zoom · TopoJSON · ECharts · dnd-kit · cmdk · JSZip · Supabase(PostgreSQL/Auth/Storage) · Vitest · Testing Library · Playwright · oxlint.
+
+**지도 엔진 선택**: MapLibre 대신 d3-geo 투영 + SVG 렌더러를 하나로 사용합니다. GeoJSON/TopoJSON은 투영 좌표로, SVG 지도는 원본 viewBox 좌표로, 래스터 이미지는 정규화 좌표(0–1)로 다루며, 세 형식 모두 같은 편집 도구(영역 색칠·폴리곤·꼭짓점·마커·선)를 공유합니다. 타일 서버가 필요 없고, 가상 세계의 이미지 지도까지 같은 방식으로 편집할 수 있습니다. 마커·도형은 화면 픽셀이 아니라 **지도 좌표**로 저장되므로 확대·이동 후에도 위치가 어긋나지 않습니다(E2E에서 확대 중 마커 고정 검증).
+
+### 데이터 모델 핵심
+
+- **Entity Registry** `atlas_entities`: 국가·지역·정당·계파·정부·의회·선거·인물·부대·함선·장비·사건·전쟁·전투·조약·단체 공통 행(이름, 설정 상태 확정/잠정/아이디어/미정/폐기, 요약, 본문, 색상, 이미지, 태그, 존재 기간, 생성 세계선). 유형별 정적 정보는 `atlas_countries` 등 하위 테이블(같은 id)에 둡니다.
+- 모든 참조는 `(project_id, id)` **복합 외래키**로 걸려 있어 다른 프로젝트의 항목이나 삭제된 항목을 가리킬 수 없습니다. 삭제 시 참조는 `ON DELETE SET NULL (column)`/`CASCADE`로 정리됩니다.
+- **시점 데이터(state)**: 국가 상태, 영토 지배, 영유권 주장, 직책, 소속, 의석 배분, 지지율, 부대 편제, 함선 소속, 장비 보유, 참전, 외교관계, 일반 관계, 마커, 지도 도형 — 모두 `branch_id`, `valid_from`(포함), `valid_to`(미포함, 반열림 구간), `overrides_id`, `is_tombstone` 열을 가집니다.
+- **세계선 copy-on-write**: 분기는 상위 세계선에서 *분기일 이전에 시작된* 기록을 상속합니다. 상속 기록을 고치면 분기에 override 행이, 삭제하면 tombstone 행이 생기고 원본은 그대로입니다. 상위 세계선이 분기일 *이후*에 끝낸 기록은 분기에서 계속 이어집니다(상위의 미래는 분기의 역사가 아님). 분기일이 없는 분기는 전체 사본처럼 동작합니다. 사건·전쟁·전투·조약·선거·정부는 기본적으로 작성한 세계선에 속하고, 국가·인물·지역 등은 모든 세계선에 공통입니다(생성 시 선택 가능).
+- **과거 수정이 미래를 지우지 않음**: "이 날짜부터 변경"은 현재 기록을 그 날짜에 닫고, 새 값을 *다음 변경 시점까지만* 적용합니다(`domain/timeline.ts` `planSetFrom`).
+- **변경 기록**: 트리거가 모든 세계관 테이블의 INSERT/UPDATE/DELETE를 `atlas_change_logs`에 필드 단위로 남기고, `atlas_revert_change` RPC로 되돌립니다. 편집 시각(실제 시간)과 세계관 날짜는 분리되어 있습니다.
+
+### 보안
+
+- 모든 `atlas_*` 테이블에 RLS: 비회원 차단, VIEWER 쓰기 차단, 멤버 권한 변경·초대는 OWNER만, 프로젝트 삭제는 OWNER만.
+- 헬퍼 함수는 노출되지 않는 `atlas_private` 스키마의 `SECURITY DEFINER` + `search_path = ''`.
+- Storage 버킷 `atlas-assets`(비공개): 경로 첫 폴더가 프로젝트 ID이며, 읽기는 멤버, 쓰기·삭제는 편집자 이상.
+- 프런트엔드에는 공개용 publishable key만 사용합니다. service_role key는 어디에도 포함하지 않습니다.
+
+---
+
+## 실행 방법
+
+```bash
+npm install
+cp .env.example .env.local   # VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY 입력
+npm run dev
+```
+
+### Supabase 설정
+
+1. `supabase/migrations/*.sql`을 순서대로 적용합니다 (`supabase db push` 또는 SQL Editor). 기존 테이블과 이름이 겹치지 않도록 모든 객체는 `atlas_` 접두어를 씁니다.
+2. Storage 버킷 `atlas-assets`는 마이그레이션이 만듭니다.
+3. **Authentication → URL Configuration**에 배포 주소를 추가하세요(예: `https://<vercel-domain>/**`). 그래야 인증 메일·비밀번호 재설정 링크가 앱으로 돌아옵니다.
+4. 기본 SMTP는 시간당 발송량이 매우 적습니다. 실사용 시 커스텀 SMTP를 설정하세요.
+
+### 배포
+
+- **Vercel**: 저장소를 Vercel 프로젝트에 연결하고 환경변수 `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`를 설정합니다. `vercel.json`에 SPA rewrite가 포함되어 있습니다.
+- **GitHub Pages**: `.github/workflows/pages.yml`이 `VITE_BASE=/<repo>/`로 빌드하고 `404.html` SPA 폴백을 만듭니다. Settings → Pages → Source를 "GitHub Actions"로 설정하세요. `.env.production`에는 공개 가능한 값만 들어 있습니다.
+
+---
+
+## 테스트
+
+| 명령 | 내용 |
+|---|---|
+| `npm test` | 단위·컴포넌트 테스트(Vitest + Testing Library): 날짜, 세계선 해석/copy-on-write, 시점 계획, 의석 배치, 정당 색상, 편제 트리, 설정 충돌, 백업 재매핑, 의석도 렌더링 |
+| `npm run test:integration` | 실제 Supabase 대상: 프로젝트 생성, 프로젝트 간 격리(RLS), 복합 FK, 유형·날짜·순환 편제 제약, 분기 독립성, 역참조 RPC, 열람자/편집자/소유자 권한, 변경 기록 되돌리기, Storage 정책, 백업 → 새 프로젝트 가져오기 |
+| `npm run e2e` | Playwright로 PART XX 종합 시나리오 35단계 전체를 실제 브라우저에서 수행 (`ATLAS_MAP_FILE`에 1938 GeoJSON 경로 필요) |
+| `npm run e2e:tour -- <projectUrl>` | 모든 화면과 모든 상세 탭을 순회하며 오류 화면·런타임 오류 검사 |
+
+통합·E2E 테스트에는 확인된 테스트 계정 2개가 필요합니다(`ATLAS_E2E_OWNER`, `ATLAS_E2E_OTHER`, `ATLAS_E2E_PASSWORD`).
+
+---
+
+## 알려진 제한
+
+- SVG 지도의 *원본* 경로는 꼭짓점 편집 대상이 아닙니다(색칠·연결·주장은 가능). GeoJSON 원본 경계는 "편집 가능한 사본 만들기"로 폴리곤을 복사한 뒤 편집합니다. 직접 그린 폴리곤은 꼭짓점 편집이 됩니다.
+- 항목의 기본 정보(이름·존재 기간)는 세계선 공통입니다. 세계선마다 달라지는 값은 시점별 상태(국가 상태 등)로 기록하고, 특정 세계선에 없어야 하는 항목은 "현재 세계선에서 숨기기"를 씁니다. 조약의 '전쟁 종결' 효과는 전쟁 항목의 종료일(공통 정보)을 바꿉니다.
+- 다중 사용자 동시 편집은 마지막 저장 우선이며 실시간 협업 커서는 없습니다.
+- 대용량 백업(약 3MB 초과)은 테이블별로 나눠 가져오므로 그 경우 원자성이 테이블 단위입니다(실패 시 새 프로젝트를 삭제해 정리).
